@@ -6,8 +6,7 @@ exports.sendVerificationCode = async (req, res) => {
   const { phone } = req.body;
   if (!phone) return res.status(400).json({ message: "Phone number required" });
   const code = Math.floor(100000 + Math.random() * 900000); // 6-digit
-  console.log(code);
-  await redis.set(`verify:${phone}`, code.toString(), "EX", 60*10); // 30 mins
+  await redis.set(`verify:${phone}`, code.toString(), "EX", 60 * 10); // 30 mins
   res.json({ message: "Verification code sent" });
 };
 

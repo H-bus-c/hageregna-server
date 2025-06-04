@@ -8,9 +8,9 @@ const Redis = require("ioredis");
 const app = express();
 const bcrypt = require("bcryptjs");
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" } });
+const io = new Server(server, { cors: { origin: process.env.FRONTEND_URL } });
 const redis = new Redis(process.env.REDIS_URL, {
-   tls: {}, // Required by Upstash to enable SSL
+  tls: {}, // Required by Upstash to enable SSL
 }); // defaults to localhost:6379
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -18,7 +18,11 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type,Authorization");
   next();
 });
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL, // <-- replace with your React app domain
+  })
+);
 app.use(express.json());
 
 
