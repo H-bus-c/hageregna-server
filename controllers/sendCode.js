@@ -1,6 +1,8 @@
 // routes/sms.js or controller
 const Redis = require("ioredis");
-const redis = new Redis(); // assume you already configured redis client
+const redis = new Redis(process.env.REDIS_URL, {
+  tls: {}, // Required by Upstash to enable SSL
+}); // assume you already configured redis client
 
 exports.sendVerificationCode = async (req, res) => {
   const { phone } = req.body;
