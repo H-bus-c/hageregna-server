@@ -8,21 +8,33 @@ const Redis = require("ioredis");
 const app = express();
 const bcrypt = require("bcryptjs");
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: process.env.FRONTEND_URL } });
 const redis = new Redis(process.env.REDIS_URL, {
   tls: {}, // Required by Upstash to enable SSL
 }); // defaults to localhost:6379
-app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type,Authorization");
-  next();
+const allowedOrigins = ['http://localhost:3000',  process.env.FRONTEND_URL];
+const io = new Server(server, {
+  cors: {
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    methods: ['GET', 'POST'],
+    credentials: true,
+  }
 });
-app.use(
-  cors({
-    origin: process.env.FRONTEND_URL, // <-- replace with your React app domain
-  })
-);
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }, credentials: true,
+}));
 app.use(express.json());
 
 
@@ -132,7 +144,7 @@ require("./router/user")(app);
 require("./router/userUpdateHistory")(app);
 require("./router/zone")(app);
 require("./router/sendCode")(app);
-server.listen(process.env.PORT, () => {
+server.listen(process.env.PORT||3000, () => {
   console.log(process.env.PORT, "port listen...");
 });
 
