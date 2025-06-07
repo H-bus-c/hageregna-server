@@ -26,11 +26,22 @@ exports.create = async (req, res) => {
   body.lockoutEnabled = false;
   body.accessFailedCount = 0; // Change the security stamp
   body.roleId = -(-body.roleId);
-  body.passwordHash = "12345";
-  bcrypt.hash(body.passwordHash, saltRounds, async function (err, hash) {
+  let passwordsHash = "" + Math.floor(1000 + Math.random() * 9000);
+  bcrypt.hash(passwordsHash, saltRounds, async function (err, hash) {
     body.passwordHash = hash;
     if (err) return res.json(err);
+    await transporter.sendMail({
+      from: "haileiyesusyaregal@gmail.com",
+      to: `${body.email}`,
+      subject: "New Password",
+      html: `<div ><center>
+    <div><h4>This is your password </h4>
+    <h3>${passwordsHash}</h3></div>
+    </center>
+    </div>`,
+    });
     const data = await User.create(body);
+
     res.json({ data, message: "Data Insert Successfully" });
   });
 };
